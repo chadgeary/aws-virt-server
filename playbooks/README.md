@@ -1,2 +1,7 @@
 # Reference
-The Ansible playbook to install/configure a desktop (xfce), remote desktop (xrdp), web interface (Guacamole), and web proxy (Apache httpd).
+The Ansible playbook to install/configure virt_workstation
+
+# Deploy
+```
+ansible-playbook -i localhost virt-workstation-local.yml 
+``` 

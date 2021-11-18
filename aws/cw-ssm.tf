@@ -103,7 +103,7 @@ resource "aws_ssm_association" "cw-ssm-assoc" {
   }
   parameters = {
     ExtraVariables = "name_prefix=${var.name_prefix} name_suffix=${random_string.cw-random.result} guacnet_cidr=${var.guacnet_cidr} guacnet_guacd=${var.guacnet_guacd} guacnet_guacdb=${var.guacnet_guacdb} guacnet_guacamole=${var.guacnet_guacamole} guacnet_webproxy=${var.guacnet_webproxy} guacnet_duckdnsupdater=${var.guacnet_duckdnsupdater} aws_region=${var.aws_region} desktop=${var.desktop} enable_duckdns=${var.enable_duckdns} duckdns_domain=${var.duckdns_domain} duckdns_token=${var.duckdns_token} letsencrypt_email=${var.letsencrypt_email}"
-    PlaybookFile   = "cloud_workstation_aws.yml"
+    PlaybookFile   = "virt_workstation_aws.yml"
     SourceInfo     = "{\"path\":\"https://s3.${var.aws_region}.amazonaws.com/${aws_s3_bucket.cw-bucket.id}/playbook/\"}"
     SourceType     = "S3"
     Verbose        = "-v"

@@ -1,0 +1,129 @@
+---
+- name: workstation.yml
+  hosts: all
+  tasks:
+
+    - name: docker group
+      ansible.builtin.group:
+        name: docker
+        state: present
+      become: True
+      become_user: root
+
+    - name: set user as fact
+      set_fact:
+        playbook_user: "{{ lookup('env', 'USER') }}"
+
+    - name: docker group add user
+      ansible.builtin.user:
+        name: "{{ playbook_user }}"
+        append: yes
+        groups: docker
+      become: True
+      become_user: root
+
+    - name: pre-req apt packages
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - firefox
+          - gnupg
+          - lsb-release
+          - ssl-cert
+          - xz-utils
+      become: True
+      become_user: root
+
+    - name: get minikube binary
+      get_url:
+        url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+        dest: /usr/local/bin/minikube
+        mode: '0555'
+      become: True
+      become_user: root
+
+    - name: apt keys (docker, google, vscode, virtbox, hashicorp/vagrant, k8s)
+      ansible.builtin.apt_key:
+        url: "{{ item }}"
+        keyring: /usr/share/keyrings/cloudworkstation-keyring.gpg
+        state: present
+      with_items:
+        - https://download.docker.com/linux/ubuntu/gpg
+        - https://dl.google.com/linux/linux_signing_key.pub
+        - https://www.virtualbox.org/download/oracle_vbox_2016.asc
+        - https://www.virtualbox.org/download/oracle_vbox.asc
+        - https://packages.microsoft.com/keys/microsoft.asc
+        - https://apt.releases.hashicorp.com/gpg
+        - https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      become: True
+      become_user: root
+
+    - name: docker apt repo 
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudworkstation-keyring.gpg] https://download.docker.com/linux/ubuntu focal stable"
+        filename: docker
+        state: present
+      become: True
+      become_user: root
+
+    - name: chrome apt repo
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudworkstation-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main"
+        filename: google-chrome
+        state: present
+      become: True
+      become_user: root
+
+    - name: hashicorp/vagrant apt repo 
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudworkstation-keyring.gpg] https://apt.releases.hashicorp.com focal main"
+        filename: hashicorp
+        state: present
+      become: True
+      become_user: root
+
+    - name: virtualbox apt repo
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudworkstation-keyring.gpg] https://download.virtualbox.org/virtualbox/debian focal contrib"
+        filename: virtualbox
+        state: present
+      become: True
+      become_user: root
+
+    - name: vscode apt repo
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudworkstation-keyring.gpg] https://packages.microsoft.com/repos/code stable main"
+        filename: vscode
+        state: present
+      become: True
+      become_user: root
+
+    - name: kubernetes apt repo
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/cloudworkstation-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main"
+        filename: kubernetes
+        state: present
+      become: True
+      become_user: root
+
+    - name: chrome docker kubectl vagrant virtualbox vscode xfce xrdp
+      apt:
+        pkg:
+          - code
+          - containerd.io
+          - docker-ce
+          - docker-ce-cli
+          - google-chrome-stable
+          - kubectl
+          - vagrant
+          - virtualbox-6.1
+        state: latest
+        update_cache: yes
+      retries: 3
+      delay: 30
+      register: packages_install
+      until: packages_install is not failed
+      become: True
+      become_user: root
