@@ -1,6 +1,7 @@
 ---
 - name: workstation.yml
-  hosts: all
+  hosts: localhost
+  connection: local 
   tasks:
 
     - name: docker group
